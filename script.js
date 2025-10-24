@@ -179,6 +179,8 @@ function openModal(item) {
 
 	// Show modal
 	modalEl.setAttribute('aria-hidden', 'false');
+	// Move focus to Close for accessibility
+	modalCloseBtn.focus();
 }
 
 function closeModal() {
@@ -202,7 +204,7 @@ document.addEventListener('keydown', (e) => {
 
 // 10) Wire up the main button
 getBtn.addEventListener('click', async () => {
-	showLoading();
+	// fetchApod handles loading UI
 	const items = await fetchApod();
 	renderGallery(items);
 });
