@@ -77,18 +77,17 @@ function normalizeItems(data) {
 
 	return list
 		.map(item => {
-			// APOD can be image or video
 			const isImage = item.media_type === 'image';
 			const hasThumb = !!item.thumbnail_url;
-			const imageUrl = isImage ? (item.url || item.hdurl) : (hasThumb ? item.thumbnail_url : null);
-			if (!imageUrl) return null; // we can’t display this item
-
+			const thumb = hasThumb ? item.thumbnail_url : (item.url || item.hdurl);
+			const full = item.hdurl || item.url || thumb;
+			if (!thumb) return null;
 			return {
 				title: item.title || 'Untitled',
 				date: item.date || '',
 				explanation: item.explanation || '',
-				url: imageUrl,
-				hdurl: item.hdurl || item.url || imageUrl
+				thumb,        // small image for gallery
+				full          // large image for modal
 			};
 		})
 		.filter(Boolean);
@@ -99,6 +98,7 @@ async function fetchApod() {
 	// Show the loading message and clear the gallery
 	showLoading();
 	galleryEl.innerHTML = '';
+	showSkeletons(); // show lightweight placeholders
 
 	try {
 		const res = await fetch(NASA_APOD_URL);
@@ -124,6 +124,17 @@ async function fetchApod() {
 	}
 }
 
+// Simple skeleton cards to show while waiting
+function showSkeletons(count = 12) {
+	const skeletonHtml = Array.from({ length: count }).map(() => `
+		<article class="gallery-item">
+			<div class="skeleton" aria-hidden="true"></div>
+			<p style="opacity:0">Loading...</p>
+		</article>
+	`).join('');
+	galleryEl.innerHTML = skeletonHtml;
+}
+
 // 8) Render the gallery cards
 function renderGallery(items) {
 	// Keep a copy so the modal can read details later
@@ -143,7 +154,13 @@ function renderGallery(items) {
 	const cards = items.map((item, index) => {
 		return `
 			<article class="gallery-item" data-index="${index}" tabindex="0" aria-label="View details for ${item.title}">
-				<img src="${item.url}" alt="${item.title}" loading="lazy" />
+				<img
+					src="${item.thumb}"
+					alt="${item.title}"
+					loading="lazy"
+					width="100%"
+					onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=&quot;placeholder&quot;>Image unavailable</div>';"
+				/>
 				<p><strong>${item.title}</strong><br><span>${formatDate(item.date)}</span></p>
 			</article>
 		`;
@@ -171,7 +188,7 @@ function renderGallery(items) {
 // 9) Modal logic
 function openModal(item) {
 	// Fill in the modal content
-	modalImg.src = item.hdurl || item.url;
+	modalImg.src = item.full; // load full image only in modal
 	modalImg.alt = item.title;
 	modalTitle.textContent = item.title;
 	modalDate.textContent = formatDate(item.date);
@@ -204,7 +221,6 @@ document.addEventListener('keydown', (e) => {
 
 // 10) Wire up the main button
 getBtn.addEventListener('click', async () => {
-	// fetchApod handles loading UI
 	const items = await fetchApod();
 	renderGallery(items);
 });
