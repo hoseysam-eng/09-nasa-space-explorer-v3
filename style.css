@@ -318,6 +318,7 @@ button:focus-visible {
   background:
     linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.0)),
     var(--card-bg);
+  touch-action: pan-y; /* allow vertical pan, we handle horizontal swipes in JS */
 }
 
 .modal-image {
@@ -326,6 +327,7 @@ button:focus-visible {
   object-fit: contain;
   display: block;
   background: #000;
+  touch-action: pan-y; /* keep vertical drag for tall images */
 }
 
 .modal-meta { padding: 16px 20px 22px; }

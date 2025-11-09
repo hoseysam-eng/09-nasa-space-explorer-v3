@@ -67,6 +67,7 @@ const modalImg = document.getElementById('modalImage');
 const modalTitle = document.getElementById('modalTitle');
 const modalDate = document.getElementById('modalDate');
 const modalDesc = document.getElementById('modalDesc');
+const modalContentEl = document.querySelector('.modal-content'); // added: swipe target
 
 // Random fact element
 const factText = document.getElementById('factText');
@@ -463,6 +464,46 @@ document.addEventListener('keydown', (e) => {
     }
   }
 });
+
+// Touch swipe: allow left/right swipe to move between images when modal is open
+let touchStartX = 0;
+let touchStartY = 0;
+let touchStartAt = 0;
+const SWIPE_THRESHOLD = 40; // px needed to qualify as swipe
+const SWIPE_TIME = 800;     // max ms for a quick swipe
+
+if (modalContentEl) {
+  modalContentEl.addEventListener('touchstart', (e) => {
+    if (modalEl.getAttribute('aria-hidden') === 'true') return;
+    if (!e.touches || e.touches.length !== 1) return; // single-finger only
+    const t = e.touches[0];
+    touchStartX = t.clientX;
+    touchStartY = t.clientY;
+    touchStartAt = Date.now();
+  }, { passive: true });
+
+  modalContentEl.addEventListener('touchend', (e) => {
+    if (modalEl.getAttribute('aria-hidden') === 'true') return;
+    if (!e.changedTouches || e.changedTouches.length === 0) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchStartX;
+    const dy = t.clientY - touchStartY;
+    const dt = Date.now() - touchStartAt;
+
+    // Horizontal, quick-enough swipe
+    if (dt <= SWIPE_TIME && Math.abs(dx) >= SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) {
+        // swipe left -> next
+        const next = (modalIndex + 1) % currentItems.length;
+        openModalByIndex(next);
+      } else {
+        // swipe right -> previous
+        const prev = (modalIndex - 1 + currentItems.length) % currentItems.length;
+        openModalByIndex(prev);
+      }
+    }
+  }, { passive: true });
+}
 
 // 10) Wire up the main button
 getBtn.addEventListener('click', async () => {
