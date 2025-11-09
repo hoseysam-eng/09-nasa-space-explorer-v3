@@ -7,6 +7,11 @@
   <!-- Google Font to align closer with NASA's web style -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Speed up first image fetch by preconnecting to the thumbnail proxy CDN -->
+  <link rel="preconnect" href="https://images.weserv.nl" crossorigin>
+  <!-- Warm up NASA API and fallback CDN to reduce first-click latency -->
+  <link rel="preconnect" href="https://api.nasa.gov" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
   <link href="style.css" rel="stylesheet" type="text/css" />
 </head>
@@ -25,6 +30,8 @@
 
     <div class="filters">
       <button id="getImageBtn">Get Space Images</button>
+      <!-- New: Load more small batch to keep first view fast -->
+      <button id="loadMoreBtn" hidden>Load More</button>
     </div>
 
     <!-- Loading Message -->
@@ -43,7 +50,7 @@
     <div class="modal-backdrop" data-close="true"></div>
     <div class="modal-content" role="document">
       <button id="modalClose" class="modal-close" aria-label="Close">×</button>
-      <img id="modalImage" src="" alt="Space image" class="modal-image" />
+      <img id="modalImage" src="" alt="Space image" class="modal-image" decoding="async" />
       <div class="modal-meta">
         <h3 id="modalTitle" class="modal-title"></h3>
         <p id="modalDate" class="modal-date"></p>

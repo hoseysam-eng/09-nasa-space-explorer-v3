@@ -207,6 +207,9 @@ button:focus-visible {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  /* Defer rendering when offscreen to speed up initial load */
+  content-visibility: auto;
+  contain-intrinsic-size: 320px 260px; /* reserve space to avoid jumps */
 }
 
 /* Three columns on wider screens */
