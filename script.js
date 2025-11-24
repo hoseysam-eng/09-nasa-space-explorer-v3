@@ -279,8 +279,8 @@ function lazyLoadImages() {
 function renderGallery(items) {
   // Keep a copy so the modal can read details later
   currentItems = items;
-  const visible = items;            // was: items.slice(-PAGE_SIZE)
-  const startIndex = 0;             // was: items.length - visible.length
+  const visible = items.slice(-PAGE_SIZE);
+  const startIndex = items.length - visible.length;
 
   if (!visible.length) {
     galleryEl.innerHTML = `
@@ -443,7 +443,7 @@ if (modalContentEl) {
 
     // Horizontal, quick-enough swipe
     if (dt <= SWIPE_TIME && Math.abs(dx) >= SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
-      if dx < 0) {
+      if (dx < 0) {
         // swipe left -> next
         const next = (modalIndex + 1) % currentItems.length;
         openModalByIndex(next);
@@ -457,12 +457,15 @@ if (modalContentEl) {
 }
 
 // 10) Wire up the main button
-getBtn.addEventListener('click', async () => {
-  // Use cache if available
-  const cached = getCache();
-  if (cached) {
-    renderGallery(cached);
-    return;
+getBtn.addEventListener('click', async (e) => {
+  // Hold Shift/Alt/Ctrl/Meta to bypass the 5-minute cache
+  const bypassCache = e.shiftKey || e.altKey || e.ctrlKey || e.metaKey;
+  if (!bypassCache) {
+    const cached = getCache();
+    if (cached) {
+      renderGallery(cached);
+      return;
+    }
   }
   const items = await fetchApod(getInitialCount(), { mode: 'initial' });
   renderGallery(items);
@@ -471,20 +474,30 @@ getBtn.addEventListener('click', async () => {
 // Load more small batch on demand to keep initial load fast
 if (loadMoreBtn) {
   loadMoreBtn.addEventListener('click', async () => {
-    const batchCount = PAGE_SIZE;
+    // Increase batch size to improve chances of getting uniques
+    const batchCount = PAGE_SIZE * 2;
     const prevText = loadMoreBtn.textContent;
     loadMoreBtn.textContent = 'Loading…';
     loadMoreBtn.disabled = true;
-    const more = await fetchApod(batchCount, { mode: 'append', existing: currentItems });
+
+    let more = await fetchApod(batchCount, { mode: 'append', existing: currentItems });
+    // Retry once if we got zero after dedupe (common with fallback dataset)
+    if (!more.length) {
+      try {
+        more = await fetchApod(batchCount, { mode: 'append', existing: currentItems });
+      } catch (_) {}
+    }
+
     if (more.length) {
       appendGallery(more);
       setCache(currentItems);
+      loadMoreBtn.textContent = prevText;
     } else {
       loadMoreBtn.textContent = 'No new images';
       setTimeout(() => { loadMoreBtn.textContent = prevText; }, 1500);
     }
+
     loadMoreBtn.disabled = false;
-    if (more.length) loadMoreBtn.textContent = prevText;
   });
 }
 

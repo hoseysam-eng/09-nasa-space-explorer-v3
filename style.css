@@ -277,6 +277,14 @@ button:focus-visible {
   text-align: center;
   padding: 40px;
   color: var(--muted);
+  display: grid;         /* center children both ways */
+  place-items: center;   /* shorthand for align-items + justify-items */
+  min-height: 40vh;      /* enough height to center visually */
+}
+
+/* Make placeholder span all columns and center its content */
+.gallery > .placeholder {
+  grid-column: 1 / -1;
 }
 
 .placeholder-icon {
@@ -307,7 +315,7 @@ button:focus-visible {
 .modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.85); /* increased opacity for better readability */
+  background: rgba(0,0,0,0.75); /* darker for readability */
   backdrop-filter: none;
   z-index: 0; /* behind modal content, above page */
 }
@@ -412,16 +420,4 @@ button:focus-visible {
   font-size: 12px;
   color: var(--muted);
   line-height: 1.4;
-}
-
-.gallery .placeholder {
-  grid-column: 1 / -1;       /* span all columns */
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 40px;
-  min-height: 260px;
-  width: 100%;
-  text-align: center;
 }
