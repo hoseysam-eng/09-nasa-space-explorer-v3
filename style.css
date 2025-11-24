@@ -7,29 +7,25 @@
 
 /* Protocol-inspired theming */
 :root {
-  /* Updated color system to align with Protocol template */
-  --nasa-blue: #3b82f6;       /* primary */
-  --nasa-red: #ef4444;        /* alert/destructive */
-  --space-bg: #000000;        /* page background is pure black */
-  --card-bg: #000000;         /* cards/modal surfaces are pure black */
-  --text: #e5e7eb;            /* soft white */
-  --muted: #94a3b8;           /* slate-muted */
-  --shadow: rgba(2, 6, 23, 0.6);
-
-  /* Extra accents */
-  --ring: rgba(59,130,246,0.45);
-  --glow-1: rgba(59,130,246,0.16);
-  --glow-2: rgba(147,51,234,0.14);
-  --grid: rgba(148,163,184,0.06);
-  --grid-2: rgba(148,163,184,0.05);
-  --card-border-1: rgba(59,130,246,0.45);
-  --card-border-2: rgba(14,165,233,0.35);
+  /* NASA+ themed palette (simpler + higher contrast) */
+  --nasa-blue: #0B3D91;      /* primary brand blue */
+  --nasa-blue-alt: #0d4fbf;  /* hover/active tint */
+  --nasa-red: #FC3D21;       /* brand red accent */
+  --space-bg: #05070A;       /* deep near-black */
+  --panel: #0D1117;          /* surface panels */
+  --panel-alt: #121821;      /* subtle hover */
+  --text: #F5F7FA;
+  --muted: #8896A8;
+  --border: #1f2730;
+  --focus: rgba(11,61,145,0.55);
+  --shadow-soft: 0 4px 12px rgba(0,0,0,0.5);
+  --plus-accent: #dd3328; /* specific '+' color */
 }
 
 /* Base page styles */
 body {
   font-family: 'Public Sans', Arial, Helvetica, sans-serif;
-  background-color: var(--space-bg); /* darker base */
+  background: var(--space-bg);
   color: var(--text);
   padding: 20px;
   line-height: 1.5;
@@ -59,23 +55,21 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 28px 24px;
+  padding: 24px 20px;
   margin-bottom: 20px;
-  background:
-    linear-gradient(180deg, rgba(59,130,246,0.25), rgba(59,130,246,0.08) 40%, rgba(255,255,255,0.02)),
-    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-  border: 1px solid rgba(148,163,184,0.16);
-  backdrop-filter: saturate(120%) blur(6px);
-  box-shadow: 0 16px 40px var(--shadow);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  backdrop-filter: none;
   position: relative;
   z-index: 1; /* lift above mesh */
 }
-
-h1 {
+.site-header h1 {
   font-weight: 800;
   letter-spacing: 0.5px;
   color: var(--text);
   text-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  background: none; /* ensure override without gradients */
 }
 
 /* Logo */
@@ -85,18 +79,22 @@ h1 {
   filter: drop-shadow(0 4px 10px var(--shadow));
 }
 
+/* Plus accent */
+.plus-accent {
+  color: var(--plus-accent); /* use dedicated accent */
+  margin: 0 6px 0 2px;
+  font-weight: 800;
+}
+
 /* Random Fact */
 .fact-section {
-  background: var(--card-bg);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  backdrop-filter: none;
   padding: 16px 20px;
   margin-bottom: 16px;
-  box-shadow: 0 6px 18px var(--shadow);
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.01));
-  border: 1px solid rgba(148,163,184,0.14);
-  backdrop-filter: saturate(115%) blur(4px);
+  border-radius: 12px;
 }
 .fact-title {
   font-weight: 700;
@@ -136,37 +134,32 @@ button {
 
 /* Button specific */
 button {
-  background: linear-gradient(135deg, #60a5fa, #2563eb);
-  border-color: rgba(255,255,255,0.12);
-  box-shadow:
-    0 6px 16px rgba(2,6,23,0.5),
-    0 1px 0 rgba(255,255,255,0.06) inset;
+  background: var(--nasa-blue);
+  border: 1px solid var(--nasa-blue);
+  box-shadow: none;
+  transition: background .18s ease, transform .18s ease;
   color: #fff;
   cursor: pointer;
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.2s ease,
-    background 0.2s ease;
-  transform: translateY(0);
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 16px;
+  line-height: 1.4;
+  width: 100%;
 }
 button:hover {
-  background: linear-gradient(135deg, #7cb3ff, #2f6ae6);
-  box-shadow:
-    0 12px 28px rgba(2,6,23,0.6),
-    0 1px 0 rgba(255,255,255,0.06) inset;
+  background: var(--nasa-blue-alt);
   transform: translateY(-2px);
 }
 button:active { transform: translateY(0); }
-
-input[type="date"]:focus,
-input[type="date"]:focus-visible,
-button:focus,
 button:focus-visible {
+  box-shadow: 0 0 0 3px var(--focus);
   outline: none;
-  box-shadow:
-    0 0 0 6px rgba(59,130,246,0.12),
-    0 0 0 2px var(--ring);
-  border-color: rgba(148,163,184,0.28);
+}
+
+/* Focus states for gallery items */
+.gallery-item:focus-visible {
+  outline: 2px solid var(--nasa-blue);
+  outline-offset: 2px;
 }
 
 /* Stack horizontally on wider screens */
@@ -182,13 +175,32 @@ button:focus-visible {
   }
 }
 
-/* Gallery flex container */
+/* Gallery grid container */
 .gallery {
-  display: flex;
-  flex-wrap: wrap;
+  /* grid: force 3 columns on larger screens */
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 18px;
   padding: 24px;
-  justify-content: center;
+  justify-items: stretch;
+}
+
+/* Override previous flex-based item sizing */
+.gallery-item {
+  flex: none;          /* disable flex growth */
+  width: 100%;         /* fill grid cell */
+}
+
+/* Responsive fallbacks: 2 columns then 1 */
+@media (max-width: 900px) {
+  .gallery {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 560px) {
+  .gallery {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Gallery items */
@@ -196,14 +208,12 @@ button:focus-visible {
   flex: 1 1 100%;  /* full width by default */
   min-width: 280px;
   max-width: 500px;
-  background: var(--card-bg);
+  background: var(--panel);
   padding: 10px;
   border-radius: 12px;
-  border: 1px solid transparent;
-  background:
-    linear-gradient(var(--card-bg), var(--card-bg)) padding-box,
-    linear-gradient(135deg, var(--card-border-1), var(--card-border-2)) border-box;
-  box-shadow: 0 10px 28px var(--shadow);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  transition: background .18s ease, border-color .18s ease;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -211,12 +221,9 @@ button:focus-visible {
   content-visibility: auto;
   contain-intrinsic-size: 320px 260px; /* reserve space to avoid jumps */
 }
-
-/* Three columns on wider screens */
-@media (min-width: 1000px) {
-  .gallery-item {
-    flex: 0 1 31%;
-  }
+.gallery-item:hover {
+  background: var(--panel-alt);
+  border-color: var(--nasa-blue);
 }
 
 .gallery-item img {
@@ -224,9 +231,10 @@ button:focus-visible {
   height: 200px;
   object-fit: cover;
   border-radius: 10px;
-  filter: saturate(1.05) contrast(1.02);
-  transition: transform 220ms ease, filter 220ms ease;
+  filter: brightness(0.95) saturate(1.05);
+  transition: transform .22s ease;
 }
+.gallery-item:hover img { transform: scale(1.03); }
 
 /* Mobile: let images size naturally so they don't disappear */
 @media (max-width: 480px) {
@@ -238,7 +246,7 @@ button:focus-visible {
 
 /* Skeleton placeholder while loading */
 .skeleton {
-  background: linear-gradient(90deg, #1e293b 0%, #334155 50%, #1e293b 100%);
+  background: linear-gradient(90deg,#18222c 0%,#243240 50%,#18222c 100%);
   background-size: 200% 100%;
   animation: shimmer 1.2s infinite;
   border-radius: 10px;
@@ -281,8 +289,8 @@ button:focus-visible {
   text-align: center;
   margin: 10px 20px 0;
   padding: 12px 16px;
-  background: rgba(59,130,246,0.12);
-  border: 1px dashed rgba(148,163,184,0.35);
+  background: rgba(11,61,145,0.25);
+  border: 1px solid var(--border);
   color: var(--muted);
   border-radius: 8px;
 }
@@ -299,8 +307,8 @@ button:focus-visible {
 .modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(2px);
+  background: rgba(0,0,0,0.85); /* increased opacity for better readability */
+  backdrop-filter: none;
   z-index: 0; /* behind modal content, above page */
 }
 
@@ -309,11 +317,11 @@ button:focus-visible {
   z-index: 1; /* above backdrop */
   max-width: 504px;        /* smaller modal */
   margin: 24px auto;       /* tighter top/bottom spacing */
-  background: var(--card-bg);
+  background: var(--panel);
   color: var(--text);
   border-radius: 16px;
-  border: 1px solid rgba(148,163,184,0.16);
-  box-shadow: 0 22px 60px rgba(2,6,23,0.8);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-soft);
   overflow: hidden;
   background:
     linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.0)),
@@ -344,7 +352,7 @@ button:focus-visible {
   justify-content: center;  /* horizontal centering */
   padding: 0;               /* remove default padding */
   line-height: 0;           /* remove baseline offset */
-  background: linear-gradient(135deg, #f87171, var(--nasa-red));
+  background: var(--nasa-red);
   border: none;
   color: #fff;
   width: 36px;
@@ -353,6 +361,67 @@ button:focus-visible {
   font-size: 20px;         /* balanced size inside 36px circle */
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 8px 18px rgba(2,6,23,0.65);
+  box-shadow: none;
 }
-.modal-close:hover { filter: brightness(1.1); }
+.modal-close:hover { filter: brightness(1.15); }
+
+/* Footer */
+.site-footer {
+  margin: 28px auto 0;
+  padding: 28px 24px 36px;
+  max-width: 1200px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  text-align: center;
+}
+
+.footer-brand {
+  font-weight: 700;
+  font-size: 20px;
+  margin-bottom: 14px;
+  letter-spacing: .5px;
+  color: var(--text);
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.footer-links a {
+  color: var(--muted);
+  font-size: 14px;
+  text-decoration: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  transition: color .18s ease, background .18s ease;
+}
+
+.footer-links a:hover,
+.footer-links a:focus {
+  color: var(--text);
+  background: var(--panel-alt);
+  outline: none;
+}
+
+.footer-copy {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.gallery .placeholder {
+  grid-column: 1 / -1;       /* span all columns */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+  min-height: 260px;
+  width: 100%;
+  text-align: center;
+}

@@ -7,9 +7,10 @@ const NASA_API_KEY = 'DEMO_KEY'; // Replace with your own key for higher limits
 // Build URL per request so we can change the count dynamically
 const MOBILE_MAX_WIDTH = 480;
 function getInitialCount() {
-  // Load nine images per request
   return 9;
 }
+// Show this many cards max at once
+const PAGE_SIZE = 9;
 function buildApodUrl(count) {
   return `https://api.nasa.gov/planetary/apod?api_key=${NASA_API_KEY}&count=${count}&thumbs=true`;
 }
@@ -227,7 +228,7 @@ async function fetchApod(count = getInitialCount(), options = { mode: 'initial' 
 }
 
 // Simple skeleton cards to show while waiting
-function showSkeletons(count = 12) {
+function showSkeletons(count = PAGE_SIZE) {
 	const skeletonHtml = Array.from({ length: count }).map(() => `
 		<article class="gallery-item">
 			<div class="skeleton" aria-hidden="true"></div>
@@ -278,8 +279,10 @@ function lazyLoadImages() {
 function renderGallery(items) {
   // Keep a copy so the modal can read details later
   currentItems = items;
+  const visible = items.slice(-PAGE_SIZE);
+  const startIndex = items.length - visible.length;
 
-  if (!items || items.length === 0) {
+  if (!visible.length) {
     galleryEl.innerHTML = `
       <div class="placeholder">
         <div class="placeholder-icon">🛰️</div>
@@ -293,11 +296,11 @@ function renderGallery(items) {
   const transparentPixel = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
 
   // Build HTML for all items
-  const cards = items.map((item, index) => {
-    // First image: eager and high priority so something shows up quickly
-    if (index === 0) {
+  const cards = visible.map((item, i) => {
+    const globalIndex = startIndex + i;
+    if (i === 0) {
       return `
-        <article class="gallery-item" data-index="${index}" tabindex="0" aria-label="View details for ${item.title}">
+        <article class="gallery-item" data-index="${globalIndex}" tabindex="0" aria-label="View details for ${item.title}">
           <img
             src="${item.thumb}"
             alt="${item.title}"
@@ -308,15 +311,13 @@ function renderGallery(items) {
             sizes="${item.thumbSizes}"
             width="640"
             height="360"
-            onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=&quot;placeholder&quot;>Image unavailable</div>';"
           />
           <p><strong>${item.title}</strong><br><span>${formatDate(item.date)}</span></p>
         </article>
       `;
     }
-    // Other images: lazy with data-* so we set them when near viewport
     return `
-      <article class="gallery-item" data-index="${index}" tabindex="0" aria-label="View details for ${item.title}">
+      <article class="gallery-item" data-index="${globalIndex}" tabindex="0" aria-label="View details for ${item.title}">
         <img
           src="${transparentPixel}"
           data-src="${item.thumb}"
@@ -325,10 +326,8 @@ function renderGallery(items) {
           alt="${item.title}"
           loading="lazy"
           decoding="async"
-          data-priority="${index < 3 ? 'high' : 'low'}"
           width="640"
           height="360"
-          onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=&quot;placeholder&quot;>Image unavailable</div>';"
         />
         <p><strong>${item.title}</strong><br><span>${formatDate(item.date)}</span></p>
       </article>
@@ -337,78 +336,30 @@ function renderGallery(items) {
 
   galleryEl.innerHTML = cards;
 
-  // Add click and keyboard handlers
   const cardEls = galleryEl.querySelectorAll('.gallery-item');
   cardEls.forEach(card => {
     card.addEventListener('click', () => {
       const idx = Number(card.getAttribute('data-index'));
-      openModalByIndex(idx); // changed
+      openModalByIndex(idx);
     });
     card.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         const idx = Number(card.getAttribute('data-index'));
-        openModalByIndex(idx); // changed
+        openModalByIndex(idx);
       }
     });
   });
 
-  // Start lazy-loading now that the DOM is ready
   lazyLoadImages();
-
-  // Show the "Load More" control for small extra batches
   if (loadMoreBtn) loadMoreBtn.hidden = false;
 }
 
-// Append more cards without re-rendering the whole gallery
+// Replace append with redraw of last PAGE_SIZE
 function appendGallery(newItems) {
-  if (!newItems || newItems.length === 0) return;
-  const startIndex = currentItems.length;
+  if (!newItems || !newItems.length) return;
   currentItems = currentItems.concat(newItems);
-
-  const transparentPixel = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
-  const extra = newItems.map((item, i) => {
-    const index = startIndex + i;
-    return `
-      <article class="gallery-item" data-index="${index}" tabindex="0" aria-label="View details for ${item.title}">
-        <img
-          src="${transparentPixel}"
-          data-src="${item.thumb}"
-          data-srcset="${item.thumbSrcset}"
-          data-sizes="${item.thumbSizes}"
-          alt="${item.title}"
-          loading="lazy"
-          decoding="async"
-          data-priority="low"
-          width="640"
-          height="360"
-          onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=&quot;placeholder&quot;>Image unavailable</div>';"
-        />
-        <p><strong>${item.title}</strong><br><span>${formatDate(item.date)}</span></p>
-      </article>
-    `;
-  }).join('');
-
-  galleryEl.insertAdjacentHTML('beforeend', extra);
-
-  // Bind events for just the new cards
-  const newCards = galleryEl.querySelectorAll(`.gallery-item:nth-last-child(-n+${newItems.length})`);
-  newCards.forEach(card => {
-    card.addEventListener('click', () => {
-      const idx = Number(card.getAttribute('data-index'));
-      openModalByIndex(idx); // changed
-    });
-    card.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        const idx = Number(card.getAttribute('data-index'));
-        openModalByIndex(idx); // changed
-      }
-    });
-  });
-
-  // Lazy-load the newly added images
-  lazyLoadImages();
+  renderGallery(currentItems); // re-render limited view
 }
 
 // 9) Modal logic
@@ -520,23 +471,18 @@ getBtn.addEventListener('click', async () => {
 // Load more small batch on demand to keep initial load fast
 if (loadMoreBtn) {
   loadMoreBtn.addEventListener('click', async () => {
-    const batchCount = 9; // load 9 more images per click
+    const batchCount = PAGE_SIZE;
     const prevText = loadMoreBtn.textContent;
     loadMoreBtn.textContent = 'Loading…';
     loadMoreBtn.disabled = true;
-
     const more = await fetchApod(batchCount, { mode: 'append', existing: currentItems });
     if (more.length) {
       appendGallery(more);
-      setCache(currentItems.concat(more)); // keep cache up to date with all uniques
+      setCache(currentItems);
     } else {
-      // Brief feedback: no new unique items
       loadMoreBtn.textContent = 'No new images';
-      setTimeout(() => {
-        loadMoreBtn.textContent = prevText;
-      }, 1500);
+      setTimeout(() => { loadMoreBtn.textContent = prevText; }, 1500);
     }
-
     loadMoreBtn.disabled = false;
     if (more.length) loadMoreBtn.textContent = prevText;
   });
