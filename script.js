@@ -279,8 +279,8 @@ function lazyLoadImages() {
 function renderGallery(items) {
   // Keep a copy so the modal can read details later
   currentItems = items;
-  const visible = items.slice(-PAGE_SIZE);
-  const startIndex = items.length - visible.length;
+  const visible = items;            // was: items.slice(-PAGE_SIZE)
+  const startIndex = 0;             // was: items.length - visible.length
 
   if (!visible.length) {
     galleryEl.innerHTML = `
@@ -443,7 +443,7 @@ if (modalContentEl) {
 
     // Horizontal, quick-enough swipe
     if (dt <= SWIPE_TIME && Math.abs(dx) >= SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
-      if (dx < 0) {
+      if dx < 0) {
         // swipe left -> next
         const next = (modalIndex + 1) % currentItems.length;
         openModalByIndex(next);
