@@ -279,10 +279,8 @@ function lazyLoadImages() {
 function renderGallery(items) {
   // Keep a copy so the modal can read details later
   currentItems = items;
-  const visible = items.slice(-PAGE_SIZE);
-  const startIndex = items.length - visible.length;
 
-  if (!visible.length) {
+  if (!items.length) {
     galleryEl.innerHTML = `
       <div class="placeholder">
         <div class="placeholder-icon">🛰️</div>
@@ -295,12 +293,11 @@ function renderGallery(items) {
   // Tiny transparent pixel as placeholder src to avoid immediate network request
   const transparentPixel = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
 
-  // Build HTML for all items
-  const cards = visible.map((item, i) => {
-    const globalIndex = startIndex + i;
+  // Build HTML for all items (show all loaded images, not just last PAGE_SIZE)
+  const cards = items.map((item, i) => {
     if (i === 0) {
       return `
-        <article class="gallery-item" data-index="${globalIndex}" tabindex="0" aria-label="View details for ${item.title}">
+        <article class="gallery-item" data-index="${i}" tabindex="0" aria-label="View details for ${item.title}">
           <img
             src="${item.thumb}"
             alt="${item.title}"
@@ -317,7 +314,7 @@ function renderGallery(items) {
       `;
     }
     return `
-      <article class="gallery-item" data-index="${globalIndex}" tabindex="0" aria-label="View details for ${item.title}">
+      <article class="gallery-item" data-index="${i}" tabindex="0" aria-label="View details for ${item.title}">
         <img
           src="${transparentPixel}"
           data-src="${item.thumb}"
@@ -355,11 +352,11 @@ function renderGallery(items) {
   if (loadMoreBtn) loadMoreBtn.hidden = false;
 }
 
-// Replace append with redraw of last PAGE_SIZE
+// Replace appendGallery to actually append new items and re-render all
 function appendGallery(newItems) {
   if (!newItems || !newItems.length) return;
   currentItems = currentItems.concat(newItems);
-  renderGallery(currentItems); // re-render limited view
+  renderGallery(currentItems); // re-render all loaded images
 }
 
 // 9) Modal logic
